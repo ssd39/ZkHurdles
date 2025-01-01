@@ -1,5 +1,5 @@
 [package]
-name = "increment"
+name = "cts_pvp"
 description = "Calimero increment/decrement application"
 version = "0.1.0"
 edition = "2021"
@@ -9,6 +9,8 @@ crate-type = ["cdylib"]
 
 [dependencies]
 calimero-sdk = { git = "https://github.com/calimero-network/core", branch = "master" }
+calimero-storage = { git = "https://github.com/calimero-network/core", branch = "master" }
+sha2 = "0.10"
 
 [profile.app-release]
 inherits = "release"

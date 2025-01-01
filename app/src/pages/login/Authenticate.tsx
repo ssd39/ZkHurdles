@@ -66,7 +66,7 @@ export default function Authenticate() {
         <div className="flex-wrapper">
           <div className="card">
             <div className="title-wrapper">
-              <div className="title">App template</div>
+              <div className="title">zkHurdles</div>
             </div>
             <ClientLogin
               getNodeUrl={getNodeUrl}

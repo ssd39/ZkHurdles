@@ -21,7 +21,7 @@ export default function App() {
 
   return (
     <AccessTokenWrapper getNodeUrl={getNodeUrl}>
-      <BrowserRouter basename="/core-app-template/">
+      <BrowserRouter basename="/game/">
         <Routes>
           <Route path="/" element={<SetupPage />} />
           <Route path="/admin-auth" element={<AdminAuthenticate />} />
