@@ -14,7 +14,7 @@ export default function SetupPage() {
   return (
     <ContentWrapper>
       <SetupModal
-        successRoute={() => navigate('/auth')}
+        successRoute={() => navigate('/admin-auth')}
         getNodeUrl={getNodeUrl}
         setNodeUrl={setStorageAppEndpointKey}
         setApplicationId={setStorageApplicationId}

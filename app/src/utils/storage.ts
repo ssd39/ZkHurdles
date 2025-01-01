@@ -1,9 +1,27 @@
 import { getAccessToken } from '@calimero-network/calimero-client';
+import { HealthStatus } from '../api/admin/dataSource/NodeDataSource';
+import { ResponseData } from '../api/admin/response';
+import apiClient from '../api/admin';
+
 
 export const APP_URL = 'app-url';
 export const CONTEXT_IDENTITY = 'context-identity';
 export const CONTEXT_ID = 'context-id';
 export const APPLICATION_ID = 'application-id';
+const NODE_URL = 'node-url';
+const AUTHORIZED = 'node-authorized';
+const CLIENT_KEY = 'client-key';
+
+export interface ClientKey {
+  privateKey: string;
+  publicKey: string;
+}
+
+export const clearStorage = () => {
+  localStorage.removeItem(APP_URL);
+  localStorage.removeItem(AUTHORIZED);
+  localStorage.removeItem(CLIENT_KEY);
+};
 
 export const getStorageAppEndpointKey = (): string | null => {
   try {
@@ -38,10 +56,6 @@ export const getStorageExecutorPublicKey = (): String | null => {
 
 export const setStorageAppEndpointKey = (url: string) => {
   localStorage.setItem(APP_URL, JSON.stringify(url));
-};
-
-export const clearStorageAppEndpoint = () => {
-  localStorage.removeItem(APP_URL);
 };
 
 export const getStorageContextId = (): string | null => {
@@ -80,6 +94,11 @@ export const setStorageApplicationId = (applicationId: string) => {
   localStorage.setItem(APPLICATION_ID, JSON.stringify(applicationId));
 };
 
+export const isNodeAuthorized = (): boolean => {
+  const authorized = localStorage.getItem(AUTHORIZED);
+  return authorized ? JSON.parse(authorized) : false;
+};
+
 export interface JsonWebToken {
   context_id: string;
   token_type: string;
@@ -101,4 +120,39 @@ export const getJWTObject = (): JsonWebToken | null => {
 
 export const getJWT = (): string | null => {
   return getAccessToken();
+};
+
+const verifyNodeUrl = async (
+  url: string,
+  showServerDownPopup: () => void,
+): Promise<boolean> => {
+  try {
+    new URL(url);
+    const response: ResponseData<HealthStatus> = await apiClient(
+      showServerDownPopup,
+    )
+      .node()
+      .health({ url: url });
+    if (response.data) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+};
+
+
+export const setNodeUrlFromQuery = async (showServerDownPopup: () => void) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const nodeUrl = urlParams.get(NODE_URL);
+  if (nodeUrl && (await verifyNodeUrl(nodeUrl, showServerDownPopup))) {
+    setStorageAppEndpointKey(nodeUrl);
+    const newUrl = `${window.location.pathname}auth`;
+    window.location.href = newUrl;
+  } else if (!nodeUrl) {
+    return;
+  } else {
+    window.alert('Node URL is not valid or not reachable. Please try again.');
+  }
 };

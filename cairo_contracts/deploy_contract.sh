@@ -1,0 +1,1 @@
+starkli deploy 0x035a1a98ed5667c815269230f67e9b1685ba7a2b776b294d2dc20e3a65edef1a --keystore ~/.starkli-wallets/deployer/keystore.json --account ~/.starkli-wallets/deployer/account.json --network=sepolia
