@@ -41,7 +41,7 @@
     "buttonConnectText": "Connect Wallet",
     "loginSelector": {
       "title": "Continue with wallet",
-      "starknetButtonText": "Starknet wallet"  
+      "starknetButtonText": "Starknet wallet"
     },
     "starknetLogin": {
       "title": "Login with Starknet",

@@ -7,9 +7,7 @@ export default function AuthenticatePage() {
   const navigate = useNavigate();
   return (
     <ContentWrapper>
-      <LoginSelector
-        navigateStarknetLogin={() => navigate('/auth/starknet')}
-      />
+      <LoginSelector navigateStarknetLogin={() => navigate('/auth/starknet')} />
     </ContentWrapper>
   );
 }

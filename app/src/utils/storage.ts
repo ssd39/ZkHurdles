@@ -3,7 +3,6 @@ import { HealthStatus } from '../api/admin/dataSource/NodeDataSource';
 import { ResponseData } from '../api/admin/response';
 import apiClient from '../api/admin';
 
-
 export const APP_URL = 'app-url';
 export const CONTEXT_IDENTITY = 'context-identity';
 export const CONTEXT_ID = 'context-id';
@@ -141,7 +140,6 @@ const verifyNodeUrl = async (
     return false;
   }
 };
-
 
 export const setNodeUrlFromQuery = async (showServerDownPopup: () => void) => {
   const urlParams = new URLSearchParams(window.location.search);

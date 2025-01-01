@@ -46,7 +46,9 @@ export async function getPrivateKey(): Promise<PrivateKey | null> {
     if (!clientKey) {
       return null;
     }
-    return await Crypto.keys.unmarshalPrivateKey(bs58.decode(clientKey.privateKey));
+    return await Crypto.keys.unmarshalPrivateKey(
+      bs58.decode(clientKey.privateKey),
+    );
   } catch (error) {
     console.error('Error extracting private key:', error);
     return null;

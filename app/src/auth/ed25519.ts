@@ -4,7 +4,7 @@ import { getStorageClientKey, setStorageClientKey } from './storage';
 import { ClientKey } from './types';
 
 export async function generatePrivateKey(): Promise<Crypto.PrivateKey> {
-  return await Crypto.keys.generateKeyPair("Ed25519");
+  return await Crypto.keys.generateKeyPair('Ed25519');
 }
 
 export async function getOrCreateKeypair(): Promise<ClientKey> {

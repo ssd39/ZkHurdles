@@ -21,21 +21,19 @@ export default function App() {
 
   return (
     <AccessTokenWrapper getNodeUrl={getNodeUrl}>
-      
-        <BrowserRouter basename="/core-app-template/">
-          <Routes>
-            <Route path="/" element={<SetupPage />} />
-            <Route path="/admin-auth" element={<AdminAuthenticate />} />
-            <Route
-              path="/auth/starknet"
-              element={<StarknetLogin isLogin={true} />}
-            />
-            <Route path="/game-auth" element={<Authenticate />} />
-            <Route path="/game" element={<GamePage />} />
-            <Route path="/lobby" element={<LobbyPage />} />
-          </Routes>
-        </BrowserRouter>
-   
+      <BrowserRouter basename="/core-app-template/">
+        <Routes>
+          <Route path="/" element={<SetupPage />} />
+          <Route path="/admin-auth" element={<AdminAuthenticate />} />
+          <Route
+            path="/auth/starknet"
+            element={<StarknetLogin isLogin={true} />}
+          />
+          <Route path="/game-auth" element={<Authenticate />} />
+          <Route path="/game" element={<GamePage />} />
+          <Route path="/lobby" element={<LobbyPage />} />
+        </Routes>
+      </BrowserRouter>
     </AccessTokenWrapper>
   );
 }
