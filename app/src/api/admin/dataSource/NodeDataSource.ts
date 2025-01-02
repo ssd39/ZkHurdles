@@ -297,8 +297,8 @@ export interface ContextIdentitiesResponse {
 }
 
 export interface CreateNewIdentityResponse {
-  public_key: string,
-  private_key: string,
+  public_key: string;
+  private_key: string;
 }
 
 export interface JsonWebToken {
@@ -664,7 +664,7 @@ export class NodeDataSource implements NodeApi {
       getAppEndpointKey() as string,
       getNearEnvironment(),
     );
-    console.log(headers)
+    console.log(headers);
     if (!headers) {
       return { error: { code: 401, message: t.unauthorizedErrorMessage } };
     }
@@ -674,7 +674,6 @@ export class NodeDataSource implements NodeApi {
       headers,
     );
   }
-
 
   async createAccessToken(
     contextId: string,

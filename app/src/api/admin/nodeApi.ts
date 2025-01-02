@@ -20,7 +20,7 @@ import {
   CreateContextResponse,
   GetContextsResponse,
   Context,
-  CreateNewIdentityResponse
+  CreateNewIdentityResponse,
 } from './dataSource/NodeDataSource';
 import { ApiResponse } from './response';
 

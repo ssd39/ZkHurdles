@@ -8,10 +8,10 @@ interface BalanceCardProps {
   isClaimLoading?: boolean;
 }
 
-const BalanceCard: React.FC<BalanceCardProps> = ({ 
-  balance, 
-  onClaimBonus, 
-  isClaimLoading = false 
+const BalanceCard: React.FC<BalanceCardProps> = ({
+  balance,
+  onClaimBonus,
+  isClaimLoading = false,
 }) => (
   <div className="bg-white/5 rounded-xl p-4 flex justify-between items-center">
     <div>

@@ -12,9 +12,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <ToastContainer />
-      <ServerDownProvider>
-        <App />
-      </ServerDownProvider>
+    <ServerDownProvider>
+      <App />
+    </ServerDownProvider>
   </React.StrictMode>,
 );
 

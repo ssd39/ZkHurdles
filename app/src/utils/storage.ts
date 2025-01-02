@@ -41,8 +41,8 @@ export const getStorageAppEndpointKey = (): string | null => {
 };
 
 export const getWalletAddress = (): String | null => {
-  return localStorage.getItem(WALLET_ADDRESS)
-}
+  return localStorage.getItem(WALLET_ADDRESS);
+};
 
 export const getStorageExecutorPublicKey = (): String | null => {
   try {

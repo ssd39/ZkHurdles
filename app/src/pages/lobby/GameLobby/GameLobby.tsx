@@ -22,13 +22,13 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
   const [walletAddress, setWalletAddress] = useState(getWalletAddress() || '');
   const [balance, setBalance] = useState('');
   const [appId, setAppId] = useState(getApplicationId() || '');
-  const [contextId, setContextId] = useState("")
-  const [memberPubKey, setMemberPubKey] = useState("")
-  const nvaigate = useNavigate()
+  const [contextId, setContextId] = useState('');
+  const [memberPubKey, setMemberPubKey] = useState('');
+  const nvaigate = useNavigate();
   useEffect(() => {
-    if(!isNodeAuthorized()) {
-      nvaigate("/")
-    } 
+    if (!isNodeAuthorized()) {
+      nvaigate('/');
+    }
     console.log(starknet.starknetInstance);
   }, []);
 
@@ -37,22 +37,30 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
     try {
       // check logic if room need to create
       const node = await apiClient(showServerDownPopup).node();
-      if (false && walletAddress != "0x78ff444c32ac1a3703281f8e47223a9c57c83469bf5056ee1eca093da289fcf") {
+      if (
+        false &&
+        walletAddress !=
+          '0x78ff444c32ac1a3703281f8e47223a9c57c83469bf5056ee1eca093da289fcf'
+      ) {
         // create context
         // use context id then call create_room contract call
-        const context = await node.createContexts(appId, "")
+        const context = await node.createContexts(appId, '');
         // cretate token for the context id
         const contextId = context.data?.contextId;
-        setContextId(contextId || "")
+        setContextId(contextId || '');
         if (contextId) {
-          toast.success(`🎉 New context created: ${contextId} ✅`)
-          const context_identities = (await node.getContextIdentity(contextId)).data?.identities
-          if(context_identities && context_identities?.length > 0) {
+          toast.success(`🎉 New context created: ${contextId} ✅`);
+          const context_identities = (await node.getContextIdentity(contextId))
+            .data?.identities;
+          if (context_identities && context_identities?.length > 0) {
             const context_identity = context_identities[0];
-            const token = await node.createAccessToken(contextId, context_identity)
-            console.log(context_identities)
-            console.log(context)
-            console.log(token)
+            const token = await node.createAccessToken(
+              contextId,
+              context_identity,
+            );
+            console.log(context_identities);
+            console.log(context);
+            console.log(token);
             // now wait for the other player to join the room
             // we will listen on contract and as soon as other player joins we invite them
           }
@@ -60,9 +68,9 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
       } else {
         // join the room already availabel .
         // join it using the peer id so other party can invite you
-       // const res = await node.createNewIdentity()
-       const identity = await node.createNewIdentity()
-       console.log(identity)
+        // const res = await node.createNewIdentity()
+        const identity = await node.createNewIdentity();
+        console.log(identity);
       }
     } finally {
       setPlayButtonState(-1);

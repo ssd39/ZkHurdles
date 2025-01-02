@@ -4,7 +4,9 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ className = "w-5 h-5" }) => (
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  className = 'w-5 h-5',
+}) => (
   <svg
     className={`animate-spin ${className}`}
     xmlns="http://www.w3.org/2000/svg"
