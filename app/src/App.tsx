@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import GamePage from './pages/game';
 import SetupPage from './pages/setup';
-import LobbyPage from './pages/lobby';
+import LobbyPage from './pages/lobby/GameLobby/GameLobby';
 import Authenticate from './pages/login/Authenticate';
 import AdminAuthenticate from './pages/admin/Authenticate';
 import StarknetLogin from './pages/admin/Starknet';

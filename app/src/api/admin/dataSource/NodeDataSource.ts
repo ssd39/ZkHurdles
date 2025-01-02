@@ -296,6 +296,11 @@ export interface ContextIdentitiesResponse {
   identities: string[];
 }
 
+export interface CreateNewIdentityResponse {
+  public_key: string,
+  private_key: string,
+}
+
 export interface JsonWebToken {
   accessToken: string;
   refreshToken: string;
@@ -653,6 +658,23 @@ export class NodeDataSource implements NodeApi {
       headers,
     );
   }
+
+  async createNewIdentity(): ApiResponse<CreateNewIdentityResponse> {
+    const headers: Header | null = await createAuthHeader(
+      getAppEndpointKey() as string,
+      getNearEnvironment(),
+    );
+    console.log(headers)
+    if (!headers) {
+      return { error: { code: 401, message: t.unauthorizedErrorMessage } };
+    }
+    return await this.client.post<CreateNewIdentityResponse>(
+      `${getAppEndpointKey()}/admin-api/identity/context`,
+      null,
+      headers,
+    );
+  }
+
 
   async createAccessToken(
     contextId: string,

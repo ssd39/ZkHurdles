@@ -10,6 +10,7 @@ export const APPLICATION_ID = 'application-id';
 const NODE_URL = 'node-url';
 const AUTHORIZED = 'node-authorized';
 const CLIENT_KEY = 'client-key';
+const WALLET_ADDRESS = 'WALLET_ADDRESS';
 
 export interface ClientKey {
   privateKey: string;
@@ -38,6 +39,10 @@ export const getStorageAppEndpointKey = (): string | null => {
     return null;
   }
 };
+
+export const getWalletAddress = (): String | null => {
+  return localStorage.getItem(WALLET_ADDRESS)
+}
 
 export const getStorageExecutorPublicKey = (): String | null => {
   try {

@@ -20,6 +20,7 @@ import {
   CreateContextResponse,
   GetContextsResponse,
   Context,
+  CreateNewIdentityResponse
 } from './dataSource/NodeDataSource';
 import { ApiResponse } from './response';
 
@@ -58,4 +59,5 @@ export interface NodeApi {
   uninstallApplication(
     applicationId: string,
   ): ApiResponse<UninstallApplicationResponse>;
+  createNewIdentity(): ApiResponse<CreateNewIdentityResponse>;
 }

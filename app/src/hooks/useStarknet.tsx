@@ -85,6 +85,7 @@ export function useStarknet(): useStarknetReturn {
               const argentX: StarknetWindowObject = wallets.find(
                 (wallet: any) => wallet.id === argentXId,
               ) as StarknetWindowObject;
+              localStorage.setItem("WALLET_ADDRESS", argentX.selectedAddress || "")
               setStarknetInstance(argentX);
             } else {
               setErrorMessage(t.walletNotFound);
@@ -97,6 +98,7 @@ export function useStarknet(): useStarknetReturn {
               const metamask: StarknetWindowObject = wallets.find(
                 (wallet: any) => wallet.id === 'metamask',
               ) as StarknetWindowObject;
+              localStorage.setItem("WALLET_ADDRESS", metamask.selectedAddress || "")
               setStarknetInstance(metamask);
             } else {
               setErrorMessage(t.walletNotFound);
@@ -317,7 +319,7 @@ export function useStarknet(): useStarknetReturn {
           setErrorMessage(`${errorMessage}: ${result.error.message}`);
         } else {
           setStorageNodeAuthorized();
-          navigate('/identity');
+          navigate('/lobby');
         }
       }
       setReady(true);
