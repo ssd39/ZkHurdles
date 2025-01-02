@@ -19,7 +19,7 @@ mod CTSStarknet {
     use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, Vec, Map, VecTrait, MutableVecTrait,
     };
-    use core::starknet::{ContractAddress, contract_address_const, get_caller_addess};
+    use core::starknet::{ContractAddress, contract_address_const, get_caller_address};
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
