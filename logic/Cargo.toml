@@ -1,6 +1,6 @@
 [package]
-name = "cts_pvp"
-description = "Calimero increment/decrement application"
+name = "zk_hurdles"
+description = "PVP zkGame settlment on starknet sync via calimero"
 version = "0.1.0"
 edition = "2021"
 

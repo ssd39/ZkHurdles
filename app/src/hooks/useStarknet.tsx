@@ -40,6 +40,10 @@ interface useStarknetReturn {
     walletType: string,
     setErrorMessage: (msg: string) => void,
   ) => void;
+  walletLogin_: (
+    walletType: string,
+    setErrorMessage: (msg: string) => void,
+  ) => void;
   ready: boolean;
   starknetInstance: StarknetWindowObject | null;
   argentXId: string;
@@ -89,6 +93,7 @@ export function useStarknet(): useStarknetReturn {
                 'WALLET_ADDRESS',
                 argentX.selectedAddress || '',
               );
+              localStorage.setItem('WALLET_TYPE', walletType);
               setStarknetInstance(argentX);
             } else {
               setErrorMessage(t.walletNotFound);
@@ -105,6 +110,7 @@ export function useStarknet(): useStarknetReturn {
                 'WALLET_ADDRESS',
                 metamask.selectedAddress || '',
               );
+              localStorage.setItem('WALLET_TYPE', walletType);
               setStarknetInstance(metamask);
             } else {
               setErrorMessage(t.walletNotFound);
@@ -120,6 +126,63 @@ export function useStarknet(): useStarknetReturn {
     },
     [],
   );
+
+  const walletLogin_ = async (
+    walletType: string,
+    setErrorMessage: (msg: string) => void,
+  ) => {
+    if (!getAppEndpointKey()) {
+      navigate('/');
+    }
+    try {
+      setReady(false);
+      const starknetInstance = getStarknet();
+      if (starknetInstance) {
+        if (walletType === argentXId) {
+          if (window.starknet_argentX) {
+            await starknetInstance.enable(window.starknet_argentX);
+            const wallets: StarknetWindowObject[] =
+              await starknetInstance.getAvailableWallets();
+            const argentX: StarknetWindowObject = wallets.find(
+              (wallet: any) => wallet.id === argentXId,
+            ) as StarknetWindowObject;
+            localStorage.setItem(
+              'WALLET_ADDRESS',
+              argentX.selectedAddress || '',
+            );
+            localStorage.setItem('WALLET_TYPE', walletType);
+            setStarknetInstance(argentX);
+            return argentX;
+          } else {
+            setErrorMessage(t.walletNotFound);
+          }
+        } else {
+          if (window.starknet_metamask) {
+            await starknetInstance.enable(window.starknet_metamask);
+            const wallets: StarknetWindowObject[] =
+              await starknetInstance.getAvailableWallets();
+            const metamask: StarknetWindowObject = wallets.find(
+              (wallet: any) => wallet.id === 'metamask',
+            ) as StarknetWindowObject;
+            localStorage.setItem(
+              'WALLET_ADDRESS',
+              metamask.selectedAddress || '',
+            );
+            localStorage.setItem('WALLET_TYPE', walletType);
+            setStarknetInstance(metamask);
+            return metamask;
+          } else {
+            setErrorMessage(t.walletNotFound);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`${t.errorLogin}: ${error}`);
+      setErrorMessage(t.errorLogin);
+    }
+
+    setReady(true);
+  };
 
   const requestNodeData = useCallback(
     async ({ setErrorMessage }: RequestNodeDataProps) => {
@@ -358,5 +421,6 @@ export function useStarknet(): useStarknetReturn {
     signMessage,
     logout,
     requestNodeData,
+    walletLogin_,
   };
 }

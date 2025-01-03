@@ -9,13 +9,14 @@ import {
 import {
   ClientApi,
   ClientMethod,
-  GetCountResponse,
+  GetPlayerState,
   IncreaseCountRequest,
   IncreaseCountResponse,
   ResetCounterResponse,
 } from '../clientApi';
 import { getContextId, getNodeUrl } from '../../utils/node';
 import {
+  getGameCred,
   getJWTObject,
   getStorageAppEndpointKey,
   JsonWebToken,
@@ -74,27 +75,101 @@ export class ClientApiDataSource implements ClientApi {
       };
     }
   }
-  async getCount(): ApiResponse<GetCountResponse> {
+  async getPlayerStates(): ApiResponse<any> {
     const { jwtObject, config, error } = getConfigAndJwt();
     if (error) {
       return { error };
     }
 
-    const response = await getJsonRpcClient().query<any, GetCountResponse>(
+    const response = await getJsonRpcClient().query<any, any>(
       {
         contextId: jwtObject?.context_id ?? getContextId(),
-        method: ClientMethod.GET_COUNT,
+        method: 'get_players_state',
         argsJson: {},
         executorPublicKey: jwtObject.executor_public_key,
       },
       config,
     );
     if (response?.error) {
-      return await this.handleError(response.error, {}, this.getCount);
+      return await this.handleError(response.error, {}, this.getPlayerStates);
     }
 
     return {
-      data: { count: Number(response?.result?.output) ?? 0 },
+      data: response?.result?.output,
+      error: null,
+    };
+  }
+
+  async startRoom(): ApiResponse<any> {
+    const { jwtObject, config, error } = getConfigAndJwt();
+    if (error) {
+      return { error };
+    }
+
+    const response = await getJsonRpcClient().query<any, any>(
+      {
+        contextId: jwtObject?.context_id ?? getContextId(),
+        method: 'start_room',
+        argsJson: {},
+        executorPublicKey: jwtObject.executor_public_key,
+      },
+      config,
+    );
+    if (response?.error) {
+      return await this.handleError(response.error, {}, this.getPlayerStates);
+    }
+
+    return {
+      data: response?.result?.output,
+      error: null,
+    };
+  }
+
+  async moveTo(x: number, y: number): ApiResponse<any> {
+    const { jwtObject, config, error } = getConfigAndJwt();
+    if (error) {
+      return { error };
+    }
+
+    const response = await getJsonRpcClient().query<any, any>(
+      {
+        contextId: jwtObject?.context_id ?? getContextId(),
+        method: 'take_move_chance',
+        argsJson: { x, y },
+        executorPublicKey: jwtObject.executor_public_key,
+      },
+      config,
+    );
+    if (response?.error) {
+      return await this.handleError(response.error, {}, this.getPlayerStates);
+    }
+
+    return {
+      data: response?.result?.output,
+      error: null,
+    };
+  }
+  async joinRoom(): ApiResponse<any> {
+    const { jwtObject, config, error } = getConfigAndJwt();
+    if (error) {
+      return { error };
+    }
+
+    const response = await getJsonRpcClient().query<any, any>(
+      {
+        contextId: jwtObject?.context_id ?? getContextId(),
+        method: 'join_room',
+        argsJson: {},
+        executorPublicKey: jwtObject.executor_public_key,
+      },
+      config,
+    );
+    if (response?.error) {
+      return await this.handleError(response.error, {}, this.getPlayerStates);
+    }
+
+    return {
+      data: response?.result?.output,
       error: null,
     };
   }
@@ -154,3 +229,26 @@ export class ClientApiDataSource implements ClientApi {
     };
   }
 }
+
+export const refresh_token = async () => {
+  const jwt = getJWTObject();
+  const gAuth = getGameCred();
+  if (!jwt?.exp || (jwt?.exp && jwt?.exp <= Math.floor(Date.now() / 1000))) {
+    console.log(jwt?.exp);
+    console.log(Math.floor(Date.now() / 1000));
+    ///refresh-jwt-token
+    const res = await (
+      await fetch(`${getStorageAppEndpointKey()}/admin-api/refresh-jwt-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshToken: gAuth['GAME_TOKEN'].refresh_token,
+        }),
+      })
+    ).json();
+    console.log(res);
+    localStorage.setItem('GAME_TOKEN', JSON.stringify(res?.data || '{}'));
+  }
+};

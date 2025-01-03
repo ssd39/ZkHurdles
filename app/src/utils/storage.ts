@@ -11,6 +11,7 @@ const NODE_URL = 'node-url';
 const AUTHORIZED = 'node-authorized';
 const CLIENT_KEY = 'client-key';
 const WALLET_ADDRESS = 'WALLET_ADDRESS';
+const WALLET_TYPE = 'WALLET_TYPE';
 
 export interface ClientKey {
   privateKey: string;
@@ -42,6 +43,10 @@ export const getStorageAppEndpointKey = (): string | null => {
 
 export const getWalletAddress = (): String | null => {
   return localStorage.getItem(WALLET_ADDRESS);
+};
+
+export const getWalletType = (): String | null => {
+  return localStorage.getItem(WALLET_TYPE);
 };
 
 export const getStorageExecutorPublicKey = (): String | null => {
@@ -94,6 +99,15 @@ export const getApplicationId = (): string | null => {
   return null;
 };
 
+export const getGameCred = (): any | null => {
+  return {
+    GAME_CONTEXT_ID: localStorage.getItem('GAME_CONTEXT_ID'),
+    GAME_TOKEN: JSON.parse(localStorage.getItem('GAME_TOKEN') || '{}'),
+    GAME_ID: localStorage.getItem('GAME_ID'),
+    GAME_PID: localStorage.getItem('GAME_PID'),
+  };
+};
+
 export const setStorageApplicationId = (applicationId: string) => {
   localStorage.setItem(APPLICATION_ID, JSON.stringify(applicationId));
 };
@@ -112,7 +126,7 @@ export interface JsonWebToken {
 }
 
 export const getJWTObject = (): JsonWebToken | null => {
-  const token = getAccessToken();
+  const token = getGameCred()['GAME_TOKEN'].access_token;
   if (!token) return null;
   const parts = token.split('.');
   if (parts.length !== 3) {

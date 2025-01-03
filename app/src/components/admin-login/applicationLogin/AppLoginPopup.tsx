@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import apiClient from '../../../api';
+import apiClient from '../../../api/admin';
 import {
   Context,
   ContextIdentitiesResponse,
   CreateTokenResponse,
   GetContextsResponse,
-} from '../../../api/dataSource/NodeDataSource';
-import { ResponseData } from '../../../api/response';
+} from '../../../api/admin/dataSource/NodeDataSource';
+import { ResponseData } from '../../../api/admin/response';
 import SelectContextStep from './SelectContextStep';
 import CreateAccessTokenStep from './CreateAccessTokenStep';
 import SelectIdentityStep from './SelectIdentityStep';
@@ -17,6 +17,7 @@ import {
 } from '../../../auth/storage';
 import translations from '../../../constants/en.global.json';
 import StartContextStep from './StartContextStep';
+import { useNavigate } from 'react-router-dom';
 
 interface AppLoginPopupProps {
   showPopup: boolean;
@@ -45,6 +46,7 @@ export default function AppLoginPopup({
   const [loginStep, setLoginStep] = useState(LoginStep.SELECT_CONTEXT);
   const [errorMessage, setErrorMessage] = useState('');
   const t = translations.appLoginPopup;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAvailableContexts = async () => {

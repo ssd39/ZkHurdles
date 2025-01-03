@@ -1,8 +1,6 @@
 import { ApiResponse } from '@calimero-network/calimero-client';
 
-export interface GetCountResponse {
-  count: number;
-}
+export interface GetPlayerState {}
 
 export interface IncreaseCountRequest {
   count: number;
@@ -19,7 +17,7 @@ export enum ClientMethod {
 }
 
 export interface ClientApi {
-  getCount(): ApiResponse<GetCountResponse>;
+  getPlayerStates(): ApiResponse<GetPlayerState>;
   increaseCount(
     params: IncreaseCountRequest,
   ): ApiResponse<IncreaseCountResponse>;

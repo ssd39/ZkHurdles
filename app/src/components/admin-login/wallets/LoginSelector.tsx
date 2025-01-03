@@ -72,7 +72,10 @@ export default function LoginSelector({
       <div className="container">
         <div className="center-container">{t.title}</div>
         <div className="flex-container">
-          <button className="login-btn" onClick={navigateStarknetLogin}>
+          <button
+            className="login-btn bg-[#6b6b6b]"
+            onClick={navigateStarknetLogin}
+          >
             <img src={StarknetIcon as unknown as string} alt="starknet-icon" />
             <span>{t.starknetButtonText}</span>
           </button>

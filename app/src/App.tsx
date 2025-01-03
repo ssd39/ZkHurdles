@@ -3,9 +3,9 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import GamePage from './pages/game';
 import SetupPage from './pages/setup';
 import LobbyPage from './pages/lobby/GameLobby/GameLobby';
-import Authenticate from './pages/login/Authenticate';
 import AdminAuthenticate from './pages/admin/Authenticate';
 import StarknetLogin from './pages/admin/Starknet';
+import MainGame from './pages/letsplay/index';
 import { AccessTokenWrapper } from '@calimero-network/calimero-client';
 import { getNodeUrl } from './utils/node';
 import { useServerDown } from './context/ServerDownContext';
@@ -29,9 +29,8 @@ export default function App() {
             path="/auth/starknet"
             element={<StarknetLogin isLogin={true} />}
           />
-          <Route path="/game-auth" element={<Authenticate />} />
-          <Route path="/game" element={<GamePage />} />
           <Route path="/lobby" element={<LobbyPage />} />
+          <Route path="/letsplay" element={<MainGame />} />
         </Routes>
       </BrowserRouter>
     </AccessTokenWrapper>

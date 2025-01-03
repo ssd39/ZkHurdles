@@ -257,9 +257,23 @@ export interface LoginRequest {
   walletMetadata: WalletMetadata;
 }
 
+export interface CreateInviteRequest {
+  contextId: string;
+  inviterId: string;
+  inviteeId: string;
+}
+export interface JoinInviteResponse {
+  contextId: string;
+  memberPublicKey: string;
+}
+export interface JoinInviteRequest {
+  privateKey: string;
+  invitationPayload: string;
+}
 export interface LoginResponse {}
 export interface RootKeyResponse {}
 export interface SignatureMetadata {}
+export interface CreateInviteResponse {}
 
 export interface NodeChallenge {
   nonce: String;
@@ -297,8 +311,8 @@ export interface ContextIdentitiesResponse {
 }
 
 export interface CreateNewIdentityResponse {
-  public_key: string;
-  private_key: string;
+  publicKey: string;
+  privateKey: string;
 }
 
 export interface JsonWebToken {
@@ -671,6 +685,46 @@ export class NodeDataSource implements NodeApi {
     return await this.client.post<CreateNewIdentityResponse>(
       `${getAppEndpointKey()}/admin-api/identity/context`,
       null,
+      headers,
+    );
+  }
+
+  async createInvite(
+    invitePayload: CreateInviteRequest,
+  ): ApiResponse<CreateInviteResponse> {
+    const headers: Header | null = await createAuthHeader(
+      JSON.stringify(invitePayload),
+      getNearEnvironment(),
+    );
+
+    if (!headers) {
+      return { error: { code: 401, message: t.unauthorizedErrorMessage } };
+    }
+    return await this.client.post<CreateInviteResponse>(
+      `${getAppEndpointKey()}/admin-api/contexts/invite`,
+      {
+        ...invitePayload,
+      },
+      headers,
+    );
+  }
+
+  async joinInvite(
+    joinPayload: JoinInviteRequest,
+  ): ApiResponse<JoinInviteResponse> {
+    const headers: Header | null = await createAuthHeader(
+      JSON.stringify(joinPayload),
+      getNearEnvironment(),
+    );
+
+    if (!headers) {
+      return { error: { code: 401, message: t.unauthorizedErrorMessage } };
+    }
+    return await this.client.post<JoinInviteResponse>(
+      `${getAppEndpointKey()}/admin-api/contexts/join`,
+      {
+        ...joinPayload,
+      },
       headers,
     );
   }

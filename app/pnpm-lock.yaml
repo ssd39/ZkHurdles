@@ -59,6 +59,9 @@ dependencies:
   react-tooltip:
     specifier: ^5.28.0
     version: 5.28.0(react-dom@18.3.1)(react@18.3.1)
+  react-unity-webgl:
+    specifier: ^9.7.0
+    version: 9.7.0(react@18.3.1)
   starknet:
     specifier: ^6.11.0
     version: 6.11.0
@@ -8794,6 +8797,17 @@ packages:
       prop-types: 15.8.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    dev: false
+
+  /react-unity-webgl@9.7.0(react@18.3.1):
+    resolution:
+      {
+        integrity: sha512-j+Q/kfqpOt803G2xf4bn2N2REjmZGilG7kx3FQcOOUnCUvV+moP+TeY1w2HgsiYPZjLuzqw8Hx35KtlTWlHBwA==,
+      }
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      react: 18.3.1
     dev: false
 
   /react@18.2.0:

@@ -43,7 +43,7 @@ export default function StarknetLogin({ isLogin }: StarknetLoginProps) {
     <ContentWrapper>
       <StarknetWallet
         navigateBack={() =>
-          isLogin ? navigate('/auth') : navigate('/identity/root-key')
+          isLogin ? navigate('/admin-auth') : navigate('/identity/root-key')
         }
         isLogin={isLogin}
         ready={ready}

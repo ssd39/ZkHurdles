@@ -21,6 +21,10 @@ import {
   GetContextsResponse,
   Context,
   CreateNewIdentityResponse,
+  CreateInviteRequest,
+  CreateInviteResponse,
+  JoinInviteRequest,
+  JoinInviteResponse,
 } from './dataSource/NodeDataSource';
 import { ApiResponse } from './response';
 
@@ -60,4 +64,8 @@ export interface NodeApi {
     applicationId: string,
   ): ApiResponse<UninstallApplicationResponse>;
   createNewIdentity(): ApiResponse<CreateNewIdentityResponse>;
+  createInvite(
+    invitePayload: CreateInviteRequest,
+  ): ApiResponse<CreateInviteResponse>;
+  joinInvite(joinPayload: JoinInviteRequest): ApiResponse<JoinInviteResponse>;
 }

@@ -2,19 +2,23 @@ use core::starknet::ContractAddress;
 
 #[starknet::interface]
 pub trait ICTSStarknet<TContractState> {
-    fn create_room(ref self: TContractState, context_id: ByteArray);
+    fn create_room(ref self: TContractState, context_id: ByteArray) -> u64;
     fn get_open_rooms(self: @TContractState) -> Array<u64>;
-    fn join_room(ref self: TContractState, context_identity: ByteArray);  
+    fn join_room(ref self: TContractState, context_identity: ByteArray) -> u64;   
     fn get_room_info(self: @TContractState, room_id: u64) -> Array<felt252>;
     fn claim_joining_bonus(ref self: TContractState);
     fn is_bonus_claimed(self: @TContractState, user: ContractAddress) -> bool;
+    fn is_create_room(self: @TContractState) -> bool;
     fn report_winner(ref self: TContractState, room_id: u64, vote_id: u64);
+    fn send_invite_payload(ref self: TContractState, payload: ByteArray, room_id: u64);
     fn report_winner_calimero_state(ref self: TContractState, room_id: u64, vote_id: u64);
 }
 
+const _10_POW_18: u256 = 1000000000000000000;
 
 #[starknet::contract]
 mod CTSStarknet {
+    use super::{_10_POW_18};
     use starknet::storage::StoragePathEntry;
     use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, Vec, Map, VecTrait, MutableVecTrait,
@@ -56,10 +60,19 @@ mod CTSStarknet {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
+        RoomCreated: RoomCreated,
         RoomJoined: RoomJoined,
         VoteConflict: VoteConflict,
+        InvitePayload: InvitePayload,
         #[flat]
         ERC20Event: ERC20Component::Event
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct RoomCreated {
+        pub context_id: ByteArray,
+        #[key]
+        pub room_id: u64,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -75,6 +88,13 @@ mod CTSStarknet {
         pub room_id: u64,
     }
 
+    #[derive(Drop, starknet::Event)]
+    pub struct InvitePayload {
+        pub payload: ByteArray,
+        #[key]
+        pub room_id: u64,
+    }
+
 
     #[constructor]
     fn constructor(ref self: ContractState, initial_supply: u256, recipient: ContractAddress, tee_moderator: ContractAddress) {
@@ -84,8 +104,10 @@ mod CTSStarknet {
         self.erc20.mint(recipient, initial_supply);
         self.tee_moderator.write(tee_moderator);
 
+        // making things 1st index
         self.counter.write(1);
         self.lazy_counter.write(1);
+        self.open_rooms.append().write(0);
     }
 
     #[abi(embed_v0)]
@@ -95,7 +117,7 @@ mod CTSStarknet {
             let caller = get_caller_address();
             let is_claimed = self.faucet.entry(caller).read();
             assert(!is_claimed, 'Joining bonus already claimed');
-            self.erc20.mint(caller, 100 *1000_000_000);
+            self.erc20.mint(caller, 100 * _10_POW_18);
             self.faucet.entry(caller).write(true);
         }
 
@@ -103,16 +125,16 @@ mod CTSStarknet {
             self.faucet.entry(user).read()
         }
 
-        fn create_room(ref self: ContractState, context_id: ByteArray) {
+        fn create_room(ref self: ContractState, context_id: ByteArray) -> u64 {
             let room_id = self.counter.read();
             let room_id_lazy = self.lazy_counter.read();
             assert(room_id == room_id_lazy, 'Join already open room first!');
             let caller = get_caller_address();
-            self.erc20.burn(caller, 10*1000_000_000);
+            self.erc20.burn(caller, 10 *_10_POW_18);
             let new_room = Room {
                 player1: caller,
                 player2: contract_address_const::<0>(),
-                context_id: context_id,
+                context_id: context_id.clone(),
                 invitee_context_identity: "",
                 p1_vote: 0,
                 p2_vote: 0,
@@ -122,6 +144,12 @@ mod CTSStarknet {
             self.rooms.entry(room_id).write(new_room);
             self.open_rooms.append().write(room_id);
             self.counter.write(room_id + 1);
+            self.emit(RoomCreated{ room_id, context_id });
+            room_id
+        }
+
+        fn is_create_room(self: @ContractState) -> bool {
+            return self.counter.read() == self.lazy_counter.read();   
         }
 
         fn get_open_rooms(self: @ContractState) -> Array<u64> {
@@ -133,12 +161,12 @@ mod CTSStarknet {
             room_ids
         }
 
-        fn join_room(ref self: ContractState, context_identity: ByteArray) {
+        fn join_room(ref self: ContractState, context_identity: ByteArray) -> u64 {
             let room_id_lazy = self.lazy_counter.read();
             let caller = get_caller_address();
             let room_id = self.open_rooms.at(room_id_lazy).read();
             assert(room_id != 0, 'Room already occupied!');
-            self.erc20.burn(caller, 10*1000_000_000);
+            self.erc20.burn(caller, 10 * _10_POW_18);
             self.open_rooms.at(room_id_lazy).write(0);
             let mut room = self.rooms.entry(room_id).read();
             room.player2 = caller;
@@ -147,6 +175,14 @@ mod CTSStarknet {
             self.lazy_counter.write(room_id_lazy + 1);
             // raise an event with context Identity so room/context creator can invite it
             self.emit(RoomJoined { room_id, context_identity});
+            room_id
+        }
+
+        fn send_invite_payload(ref self: ContractState, payload: ByteArray, room_id: u64) {
+            let room = self.rooms.entry(room_id).read();
+            let caller = get_caller_address();
+            assert(room.player1 == caller || room.player2 == caller, 'You are not part of the room!');
+            self.emit(InvitePayload { room_id, payload});
         }
 
         fn get_room_info(self: @ContractState, room_id: u64) -> Array<felt252> {
@@ -171,9 +207,9 @@ mod CTSStarknet {
                 self.emit(VoteConflict{ room_id });
             }
             if room.p1_vote == 2 {
-                self.erc20.mint(room.player1, 18 *1000_000_000);
+                self.erc20.mint(room.player1, 18 * _10_POW_18);
             } else if room.p1_vote == 2 {
-                self.erc20.mint(room.player2, 18 *1000_000_000);
+                self.erc20.mint(room.player2, 18 * _10_POW_18);
             }
             self.rooms.entry(room_id).write(room);
         }
@@ -187,11 +223,11 @@ mod CTSStarknet {
             if vote_id == 0 {
                 room.p1_vote += 1;
                 room.p2_vote -= 1;
-                self.erc20.mint(room.player1, 18 *1000_000_000);
+                self.erc20.mint(room.player1, 18 * _10_POW_18);
             }else{
                 room.p2_vote += 1;
                 room.p1_vote -= 1;
-                self.erc20.mint(room.player1, 18 *1000_000_000);
+                self.erc20.mint(room.player1, 18 * _10_POW_18);
             }
             self.rooms.entry(room_id).write(room);
         }

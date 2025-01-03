@@ -4,12 +4,28 @@ import InfoCard from './InfoCard';
 import BalanceCard from './BalanceCard';
 import ActionButton from './ActionButton';
 import { useStarknet } from '../../../hooks/useStarknet';
-import { getApplicationId, getWalletAddress } from '../../../utils/storage';
+import {
+  clearStorage,
+  getApplicationId,
+  getWalletAddress,
+  getWalletType,
+} from '../../../utils/storage';
 import { useServerDown } from '../../../context/ServerDownContext';
 import apiClient from '../../../api/admin';
 import { toast } from 'react-toastify';
 import { isNodeAuthorized } from '../../../utils/storage';
 import { useNavigate } from 'react-router-dom';
+import {
+  claim_bonus,
+  createRoom,
+  getBalance,
+  getInvitePayload,
+  getOpponent,
+  isClaimedBonus,
+  isCreateRoom,
+  joinRoom,
+  sendInvitePayload,
+} from '../../../utils/starknet';
 
 interface GameLobbyProps {}
 
@@ -19,29 +35,67 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
   const [playButtonState, setPlayButtonState] = useState(-1);
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const [isClaimLoading, setIsClaimLoading] = useState(false);
+  const [isBonusClaimed, setIsClaimed] = useState(true);
   const [walletAddress, setWalletAddress] = useState(getWalletAddress() || '');
-  const [balance, setBalance] = useState('');
+  const [balance, setBalance] = useState('0');
   const [appId, setAppId] = useState(getApplicationId() || '');
   const [contextId, setContextId] = useState('');
-  const [memberPubKey, setMemberPubKey] = useState('');
-  const nvaigate = useNavigate();
-  useEffect(() => {
-    if (!isNodeAuthorized()) {
-      nvaigate('/');
+  const [roomId, setRoomId] = useState(-1);
+
+  const navigate = useNavigate();
+
+  const getWalletInstance = async () => {
+    if (!starknet.starknetInstance) {
+      const wType = getWalletType();
+      if (wType) {
+        console.log('roar');
+        return await starknet.walletLogin_(wType.toString(), toast.error);
+      }
     }
     console.log(starknet.starknetInstance);
+    return starknet.starknetInstance;
+  };
+
+  useEffect(() => {
+    if (!isNodeAuthorized()) {
+      navigate('/');
+      return;
+    }
+    getBalance().then((balance) => {
+      setBalance(balance);
+    });
+    isClaimedBonus().then((is_claimed) => {
+      setIsClaimed(is_claimed);
+    });
+    /*getWalletInstance().then((walletInstance) => {
+      
+      console.log(walletInstance)
+    })*/
   }, []);
 
   const handlePlay = async () => {
     setPlayButtonState(0);
     try {
+      const walletInstance: any = await getWalletInstance();
+      const is_create_room = await isCreateRoom();
       // check logic if room need to create
       const node = await apiClient(showServerDownPopup).node();
-      if (
-        false &&
-        walletAddress !=
-          '0x78ff444c32ac1a3703281f8e47223a9c57c83469bf5056ee1eca093da289fcf'
-      ) {
+      const isAppInstalled = await node
+        .getInstalledApplicationDetails(appId)
+        .then((data) => {
+          return !(data.error?.code == 404);
+        })
+        .catch(() => false);
+      console.log('isAppInstalled:', isAppInstalled);
+      if (!isAppInstalled) {
+        await node.installApplication(
+          'f2dac55f71eeef31718118843abc65a8b9081730ab152269d5f87d455f43e012',
+          '0.1',
+          'https://blobby-public.euw3.prod.gcp.calimero.network/bafybeifddj62kbkoysu6tavsbt6zbxkeyvtg7znokmd7gvc7duzq3qdtyu',
+          '9e5656c4fc2a643bb75953b92af0c904208753161235e9e64f5781b328e7f4f7',
+        );
+      }
+      if (is_create_room) {
         // create context
         // use context id then call create_room contract call
         const context = await node.createContexts(appId, '');
@@ -61,16 +115,88 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
             console.log(context_identities);
             console.log(context);
             console.log(token);
+
+            const roomId_ = await createRoom(walletInstance, contextId);
+            getBalance().then((balance) => {
+              setBalance(balance);
+            });
+            console.log(roomId_);
+            setRoomId(roomId_);
+            setPlayButtonState(1);
+            const contex_identity: any = await getOpponent(roomId_);
+            console.log('contex_identity:', contex_identity.context_identity);
+            const inviteRes = await node.createInvite({
+              contextId: contextId,
+              inviteeId: contex_identity.context_identity,
+              inviterId: context_identity,
+            });
+            console.log(inviteRes);
+            if (inviteRes.data) {
+              await sendInvitePayload(
+                walletInstance,
+                roomId_,
+                inviteRes.data.toString(),
+              );
+            }
+            setPlayButtonState(2);
             // now wait for the other player to join the room
             // we will listen on contract and as soon as other player joins we invite them
+            localStorage.setItem('GAME_TOKEN', JSON.stringify(token.data));
+            localStorage.setItem('GAME_CONTEXT_ID', contextId);
+            localStorage.setItem('GAME_ID', context_identity);
+            localStorage.setItem('GAME_PID', '0');
+            toast.success('Woohoo! 🎉 All set, now starting a game! 🎮✨');
+            navigate('/letsplay');
+            setPlayButtonState(-1);
           }
         }
       } else {
+        // game context id: 3aVzKtgGccq4SgWnWhUmPzwrqDhrhk7R1719hdcRdj2A
         // join the room already availabel .
         // join it using the peer id so other party can invite you
-        // const res = await node.createNewIdentity()
         const identity = await node.createNewIdentity();
-        console.log(identity);
+        console.log(identity.data);
+        if (identity.data?.publicKey) {
+          const roomId_ = await joinRoom(
+            walletInstance,
+            identity.data?.publicKey,
+          );
+          getBalance().then((balance) => {
+            setBalance(balance);
+          });
+          console.log(roomId_);
+          setRoomId(roomId_);
+          // check for invite if we have jon that
+          setPlayButtonState(3);
+          const invitePayload: any = await getInvitePayload(roomId_);
+          console.log('invitePayload:', invitePayload);
+          if (invitePayload.payload) {
+            const joinData = await node.joinInvite({
+              invitationPayload: invitePayload.payload,
+              privateKey: identity.data.privateKey,
+            });
+            const token = await node.createAccessToken(
+              joinData.data?.contextId || '',
+              joinData.data?.memberPublicKey || '',
+            );
+            toast.success(
+              'Woohoo! 🎉 Joined the room 🏠, now starting a game! 🎮✨',
+            );
+            console.log(token);
+            localStorage.setItem('GAME_TOKEN', JSON.stringify(token.data));
+            localStorage.setItem(
+              'GAME_CONTEXT_ID',
+              joinData.data?.contextId || '',
+            );
+            localStorage.setItem(
+              'GAME_ID',
+              joinData.data?.memberPublicKey || '',
+            );
+            localStorage.setItem('GAME_PID', '1');
+            navigate('/letsplay');
+            setPlayButtonState(-1);
+          }
+        }
       }
     } finally {
       setPlayButtonState(-1);
@@ -80,6 +206,8 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
   const handleLogout = async () => {
     setIsLogoutLoading(true);
     try {
+      clearStorage();
+      navigate('/');
     } finally {
       setIsLogoutLoading(false);
     }
@@ -88,6 +216,14 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
   const handleClaimBonus = async () => {
     setIsClaimLoading(true);
     try {
+      const walletInstance: any = await getWalletInstance();
+
+      console.log(walletInstance);
+      await claim_bonus(walletInstance);
+      await getBalance().then((balance) => {
+        setBalance(balance);
+      });
+      setIsClaimed(true);
     } finally {
       setIsClaimLoading(false);
     }
@@ -106,10 +242,14 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
 
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
             <div className="grid gap-6 mb-8">
-              <InfoCard label="Wallet Address" value={walletAddress} />
+              <InfoCard
+                label="Wallet Address"
+                value={walletAddress.toString()}
+              />
               <InfoCard label="Calimero App ID" value={appId} />
               <BalanceCard
                 balance={balance}
+                isClaimed={isBonusClaimed}
                 onClaimBonus={handleClaimBonus}
                 isClaimLoading={isClaimLoading}
               />
@@ -130,6 +270,21 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
                 {playButtonState == -0 && (
                   <>
                     <span>Loading...</span>
+                  </>
+                )}
+                {playButtonState == 1 && (
+                  <>
+                    <span>Waiting for someone to join room.</span>
+                  </>
+                )}
+                {playButtonState == 2 && (
+                  <>
+                    <span>Waiting for opponent to accept invite.</span>
+                  </>
+                )}
+                {playButtonState == 3 && (
+                  <>
+                    <span>Waiting for invite.</span>
                   </>
                 )}
               </ActionButton>
