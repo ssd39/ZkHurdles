@@ -18,7 +18,7 @@ const UnityWebGL = () => {
   const [progressNum, setProgressNum] = useState(0);
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
-
+  const [activePlayer, setActivePlayer] = useState(0);
   useEffect(() => {
     // Load Unity instance
     if (window.UnityLoader) {
@@ -44,6 +44,9 @@ const UnityWebGL = () => {
     let x = setInterval(async () => {
       await refresh_token();
       const result: any = await new ClientApiDataSource().getPlayerStates();
+      const result2: any = await new ClientApiDataSource().getActivePlayer();
+     // console.log(result2);
+      setActivePlayer(result2.data);
       const ps_data = result.data;
       const player1 = ps_data[0];
       const player2 = ps_data[1];
@@ -61,10 +64,34 @@ const UnityWebGL = () => {
           await new ClientApiDataSource().joinRoom();
         }
       }
-    }, 1000);
+      if(isNew){
+        try{
+          
+          window.unityInstance.SendMessage(
+            'GameManager',
+            'SetMyTeamId',
+            myId
+          );
+          window.unityInstance.SendMessage(
+            'GameManager',
+            'MovePlayer',
+            `1,${player2.position.x},${player2.position.y}`,
+          );
+          window.unityInstance.SendMessage(
+            'GameManager',
+            'MovePlayer',
+            `0,${player1.position.x},${player1.position.y}`,
+          );
+          isNew = false;
+          console.log("Set the orignal location!")
+        }catch(e){
+
+        }
+      }
+    }, 3000);
 
     window.GetActiveTeamIndex = () => {
-      return 0;
+      return activePlayer;
     };
     // send calimero tx to move player
     window.MoveMeToJS = (x, y) => {
@@ -94,6 +121,27 @@ const UnityWebGL = () => {
       window.unityInstance.SetFullscreen(1);
     }
   };
+
+  useEffect(() => {
+    try {
+      if (activePlayer == myId) {
+        if (activePlayer == 0) {
+          window.unityInstance.SendMessage(
+            'GameManager',
+            'MovePlayer',
+            `1,${player2.position.x},${player2.position.y}`,
+          );
+        } else {
+          window.unityInstance.SendMessage(
+            'GameManager',
+            'MovePlayer',
+            `0,${player2.position.x},${player1.position.y}`,
+          );
+        }
+       // window.unityInstance.SendMessage('GameManager', 'ChangeTurn');
+      }
+    } catch (e) {}
+  }, [activePlayer]);
 
   return (
     <div className="webgl-content relative w-screen h-screen">

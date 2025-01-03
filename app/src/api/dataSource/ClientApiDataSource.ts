@@ -100,6 +100,31 @@ export class ClientApiDataSource implements ClientApi {
     };
   }
 
+  async getActivePlayer(): ApiResponse<any> {
+    const { jwtObject, config, error } = getConfigAndJwt();
+    if (error) {
+      return { error };
+    }
+
+    const response = await getJsonRpcClient().query<any, any>(
+      {
+        contextId: jwtObject?.context_id ?? getContextId(),
+        method: 'get_round',
+        argsJson: {},
+        executorPublicKey: jwtObject.executor_public_key,
+      },
+      config,
+    );
+    if (response?.error) {
+      return await this.handleError(response.error, {}, this.getActivePlayer);
+    }
+
+    return {
+      data: response?.result?.output,
+      error: null,
+    };
+  }
+
   async startRoom(): ApiResponse<any> {
     const { jwtObject, config, error } = getConfigAndJwt();
     if (error) {

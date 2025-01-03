@@ -89,10 +89,10 @@ const GameLobby: React.FC<GameLobbyProps> = ({}) => {
       console.log('isAppInstalled:', isAppInstalled);
       if (!isAppInstalled) {
         await node.installApplication(
-          'f2dac55f71eeef31718118843abc65a8b9081730ab152269d5f87d455f43e012',
+          '6ec4f270f40a75d4de705243ff14dd197d3971d6bef6f7d182d92fe019bd5c2c',
           '0.1',
-          'https://blobby-public.euw3.prod.gcp.calimero.network/bafybeifddj62kbkoysu6tavsbt6zbxkeyvtg7znokmd7gvc7duzq3qdtyu',
-          '9e5656c4fc2a643bb75953b92af0c904208753161235e9e64f5781b328e7f4f7',
+          'https://blobby-public.euw3.prod.gcp.calimero.network/bafybeicp5x4rapv32q5poagiqfhggwwadcvvcwsm5ex45rq3ho346p2k6q',
+          'b3be1f24e0244a59ceed689ef1a54fc8e6d5c9025cb44a6e7310a6bbd5a5cfe8',
         );
       }
       if (is_create_room) {
