@@ -45,7 +45,7 @@ const UnityWebGL = () => {
       await refresh_token();
       const result: any = await new ClientApiDataSource().getPlayerStates();
       const result2: any = await new ClientApiDataSource().getActivePlayer();
-     // console.log(result2);
+      // console.log(result2);
       setActivePlayer(result2.data);
       const ps_data = result.data;
       const player1 = ps_data[0];
@@ -64,14 +64,9 @@ const UnityWebGL = () => {
           await new ClientApiDataSource().joinRoom();
         }
       }
-      if(isNew){
-        try{
-          
-          window.unityInstance.SendMessage(
-            'GameManager',
-            'SetMyTeamId',
-            myId
-          );
+      if (isNew) {
+        try {
+          window.unityInstance.SendMessage('GameManager', 'SetMyTeamId', myId);
           window.unityInstance.SendMessage(
             'GameManager',
             'MovePlayer',
@@ -83,10 +78,8 @@ const UnityWebGL = () => {
             `0,${player1.position.x},${player1.position.y}`,
           );
           isNew = false;
-          console.log("Set the orignal location!")
-        }catch(e){
-
-        }
+          console.log('Set the orignal location!');
+        } catch (e) {}
       }
     }, 3000);
 
@@ -138,7 +131,7 @@ const UnityWebGL = () => {
             `0,${player2.position.x},${player1.position.y}`,
           );
         }
-       // window.unityInstance.SendMessage('GameManager', 'ChangeTurn');
+        // window.unityInstance.SendMessage('GameManager', 'ChangeTurn');
       }
     } catch (e) {}
   }, [activePlayer]);
